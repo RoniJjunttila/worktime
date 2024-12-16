@@ -1,0 +1,177 @@
+import { VerticalBox, Button } from "std-widgets.slint";
+
+component CustomButton inherits Rectangle {
+    in-out property text <=> txt.text;
+    in-out property button_background <=> _button_background;
+    callback clicked <=> touch.clicked;
+    callback request_exit_program(); 
+    callback request_reset_time_left(); 
+    callback request_take_break(); 
+    callback request_remember_me_later(); 
+
+    property <color> _button_background: #333; 
+
+    border-width: 1px;
+    border-color: root.background.darker(25%);
+    background: touch.pressed ? #974661 : rgba(0, 0, 0, 0);
+    height: txt.preferred-height * 3;
+    width: 120px;
+    txt := Text {
+        x: (parent.width - self.width)/2 + (touch.pressed ? 2px : 0);
+        y: (parent.height - self.height)/2 + (touch.pressed ? 1px : 0);
+        color: touch.pressed ? #fff : touch.has-hover ? #103f34 : #ffd799;
+        font-weight: 900;
+        font-size: 16px;
+    }
+     touch := TouchArea {
+        clicked => {
+            if (text == "Exit") {
+                request_exit_program();
+            } 
+            if (text == "Reset") {
+                request_reset_time_left();
+            }  
+            if (text == "Break" || text == "Start") {
+                request_take_break();
+            } 
+            if (text == "Later") {
+                request_remember_me_later();
+            }
+        }
+    }
+    Rectangle {
+        width: 55px;
+        height: 2px;
+        y: 50px;
+        background: touch.has-hover ? #103f34 : rgba(0, 0, 0, 0);
+    }
+}
+
+export component Recipe inherits Window {
+    VerticalLayout {
+        alignment: start;
+        Button { text: "Button"; }
+    }
+}
+
+export component AppWindow inherits Window {
+   background: rgba(0, 0, 0, 0);  
+    in-out property <int> timeLeft: 60;
+    width: 700px;
+    in-out property <string> bars: "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓";
+    in-out property <string> titleText: "Time till next break:";
+    in-out property <bool> onTop: false;
+    in-out property <bool> showTimeLeft: true;
+    in-out property <bool> bBreak: true;
+    callback request_reset_time_left(); 
+    callback request_take_break(); 
+    callback request_exit_program(); 
+    callback request_remember_me_later(); 
+    no-frame: true;
+    always-on-top: onTop;
+    
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        border-radius: 10px;
+        border-width: 5px;
+        background: #171717;
+        border-color: #171717;
+    }
+  
+    GridLayout {
+        padding: 50px;
+        Row {
+            HorizontalLayout {
+                alignment: start;
+                padding-bottom: 10px;
+                VerticalLayout {
+                    Text {
+                        text: "\{root.titleText} \{root.showTimeLeft ? root.timeLeft: ""} \{root.showTimeLeft ? "minutes" : ""}";
+                        font-size: 24px;
+                        font-weight: 900;
+                        color: #ffa2b4;
+                    }
+                    Text {
+                        text: "Written by Roni Junttila";
+                        font-size: 8px;
+                        color: #ffa2b4;
+                    }
+                }
+            }
+        }
+        Row {
+              Rectangle {
+                width: 530px;
+                height: 1px;
+                background: #D3D3D3;
+            }
+        }
+       Row {
+        HorizontalLayout {
+            alignment: start;
+                CustomButton {
+                    text: "Reset"; 
+                    button_background: #103f34;
+                    request_reset_time_left => {
+                        root.request_reset_time_left();
+                    }
+                Rectangle {
+                    width: 1px;
+                    x: 130px;
+                    height: 50px;
+                    background: #D3D3D3;
+                }
+            }
+                CustomButton {
+                    text: "\{root.bBreak ? "Start" : "Break"}"; 
+                    button_background: #ffd799;
+                    request_take_break => {
+                        root.request_take_break();
+                    }
+                Rectangle {
+                    width: 1px;
+                    x: 130px;
+                    height: 50px;
+                    background: #D3D3D3;
+                }
+                }
+                CustomButton {
+                    text: "\{root.timeLeft < 5 ? "Minimize" : "Later"}"; 
+                    button_background: #ffa2b4;
+                    request_remember_me_later => {
+                        root.request_remember_me_later();
+                    }
+                Rectangle {
+                    width: 1px;
+                    x: 130px;
+                    height: 50px;
+                    background: #D3D3D3;
+                }
+                }
+                CustomButton {
+                    text: "Exit"; 
+                    button_background: #9d4040;
+                    request_exit_program => {
+                        root.request_exit_program();
+                }   
+            }
+        }
+           
+        }
+        Row {
+            HorizontalLayout {
+                alignment: start;
+                Text {
+                    text: "\{root.showTimeLeft ? root.bars : ""}";
+                    font-weight: 800;
+                    font-size: 12px;
+                    height: 35px;
+                    horizontal-alignment: center;
+                    color: #ffa2b4;
+                }
+            }
+        }
+    }
+}
+
